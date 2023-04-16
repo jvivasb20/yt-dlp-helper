@@ -1,32 +1,63 @@
+# yt-dlp helper v1.0.0
+# yt-dlp version: 2023.03.04
+# Python version: 3.10.9 (tags/v3.10.9:1dd9be6, Dec  6 2022, 20:01:21) [MSC v.1934 64 bit (AMD64)]
+
 import configparser
 import os
+import subprocess
+import sys
 import winreg
 
 import yt_dlp
 
 CONFIG_FILE = 'config.ini'
-FFMPEG_LOCATION = ''
-FFPROBE_LOCATION = ''
+CONFIG_DB = 'root'
 
-""" def get_config():
 
+def get_config():
     config = configparser.ConfigParser()
+    config.read(CONFIG_FILE)
+    return config
 
-    ffmpeg_location = config.get('FFMPEG', 'ffmpeg_location')
-    ffprobe_location = config.get('FFPROBE', 'ffprobe_location')
-
-    if not ffmpeg_location or not ffprobe_location:
-        ffmpeg_location = input('Enter the path to ffmpeg: ')
-        ffprobe_location = input('Enter the path to ffprobe: ')
-        set_config(ffmpeg_location, ffprobe_location)
-    return configparser.ConfigParser()
 
 def set_config(ffmpeg_location, ffprobe_location):
     config = get_config()
-    config.set('FFMPEG', 'ffmpeg_location', ffmpeg_location)
-    config.set('FFPROBE', 'ffprobe_location', ffprobe_location)
+    config.set(CONFIG_DB, 'ffmpeg_location', ffmpeg_location)
+    config.set(CONFIG_DB, 'ffprobe_location', ffprobe_location)
     with open(CONFIG_FILE, 'w') as f:
-        config.write(f) """
+        config.write(f)
+
+
+def get_locations():
+    config = get_config()
+    ffmpeg_location = config.get(CONFIG_DB, 'ffmpeg_location')
+    ffprobe_location = config.get(CONFIG_DB, 'ffprobe_location')
+
+    if not (ffmpeg_location or ffprobe_location):
+        print("FFMPEG and FFPROBE locations not set. Please enter the path to the bin folder. (e.g. C:\\Windows\\ffmpeg\\bin))")
+
+        while not ((os.path.isfile(ffmpeg_location) or os.path.isfile(ffprobe_location))):
+
+            # "C:\Windows\ffmpeg\bin" for windows in this case
+
+            ffmpeg_bin_location = input(
+                'Enter the path: ').strip().replace('"', '')
+
+            ffmpeg_location = os.path.join(ffmpeg_bin_location, 'ffmpeg.exe')
+            ffprobe_location = os.path.join(ffmpeg_bin_location, 'ffprobe.exe')
+
+            if not ((os.path.isfile(ffmpeg_location) or os.path.isfile(ffprobe_location))):
+                print("Invalid ffmpeg or ffprobe location. Please try again.")
+            else:
+                try:
+                    subprocess.check_output([ffmpeg_location, '-version'])
+                    print("ffmpeg location set to: " + ffmpeg_location)
+                    print("ffprobe location set to: " + ffprobe_location)
+                    set_config(ffmpeg_location, ffprobe_location)
+                except subprocess.CalledProcessError:
+                    print("Invalid ffmpeg bin folder. Please try again.")
+
+    return ffmpeg_location, ffprobe_location
 
 
 def get_downloads_folder():
@@ -40,15 +71,20 @@ def get_downloads_folder():
 
 if __name__ == '__main__':
 
+    print('yt-dlp helper v1.0.0 ' + '\n' + 'yt-dlp version: ' +
+          yt_dlp.version.__version__ + '\n' + 'Python version: ' + sys.version + '\n')
+
+    ffmpeg_location, ffprobe_location = get_locations()
+
+    options = {
+        'ffmpeg_location': ffmpeg_location,
+        'ffmprobe_location': ffprobe_location,
+        'outtmpl': get_downloads_folder() + '/%(title)s.%(ext)s',
+    }
+
     link = input("Enter the link: ")
 
     file_type = input("Enter the file type: ")
-
-    options = {
-        'ffmpeg_location': 'C:\\Windows\\ffmpeg\\bin\\ffmpeg.exe',
-        'ffmprobe_location': 'C:\\Windows\\ffmpeg\\bin\\ffprobe.exe',
-        'outtmpl': get_downloads_folder() + '/%(title)s.%(ext)s',
-    }
 
     if file_type == "mp3":
 
