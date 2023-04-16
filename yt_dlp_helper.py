@@ -5,26 +5,28 @@ import winreg
 import yt_dlp
 
 CONFIG_FILE = 'config.ini'
+FFMPEG_LOCATION = ''
+FFPROBE_LOCATION = ''
 
+""" def get_config():
 
-def get_config():
     config = configparser.ConfigParser()
-    if not os.path.isfile(CONFIG_FILE):
-        with open(CONFIG_FILE, 'w') as f:
-            config.add_section('FFMPEG')
-            config.set('FFMPEG', 'ffmpeg_location', '')
-            config.set('FFMPEG', 'ffprobe_location', '')
-            config.write(f)
-    config.read(CONFIG_FILE)
-    return config
 
+    ffmpeg_location = config.get('FFMPEG', 'ffmpeg_location')
+    ffprobe_location = config.get('FFPROBE', 'ffprobe_location')
+
+    if not ffmpeg_location or not ffprobe_location:
+        ffmpeg_location = input('Enter the path to ffmpeg: ')
+        ffprobe_location = input('Enter the path to ffprobe: ')
+        set_config(ffmpeg_location, ffprobe_location)
+    return configparser.ConfigParser()
 
 def set_config(ffmpeg_location, ffprobe_location):
     config = get_config()
     config.set('FFMPEG', 'ffmpeg_location', ffmpeg_location)
-    config.set('FFMPEG', 'ffprobe_location', ffprobe_location)
+    config.set('FFPROBE', 'ffprobe_location', ffprobe_location)
     with open(CONFIG_FILE, 'w') as f:
-        config.write(f)
+        config.write(f) """
 
 
 def get_downloads_folder():
@@ -59,6 +61,7 @@ if __name__ == '__main__':
 
     elif file_type == "mp4":
         options['format'] = 'bestvideo+bestaudio/best'
+        options['merge_output_format'] = 'mp4'
 
     else:
         print("Error in params")
