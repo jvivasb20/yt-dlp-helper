@@ -1,6 +1,6 @@
 # yt-dlp-helper
 
-yt-dlp-helper is a command-line tool that simplifies the process of downloading music and videos from YouTube using the yt-dlp downloader.
+yt-dlp-helper is a python script for the command-line that simplifies the process of downloading music and videos from YouTube using the yt-dlp downloader.
 
 ## Requirements
   * Python 3.7+
