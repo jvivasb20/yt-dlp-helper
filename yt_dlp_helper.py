@@ -1,6 +1,5 @@
-# yt-dlp helper v1.0.0
-# yt-dlp version: 2023.03.04
-# Python version: 3.10.9 (tags/v3.10.9:1dd9be6, Dec  6 2022, 20:01:21) [MSC v.1934 64 bit (AMD64)]
+# TODO: Add quality selection
+# TODO: Add support for more file types
 
 import configparser
 import os
@@ -61,6 +60,7 @@ def get_locations():
 
 
 def get_downloads_folder():
+    # get the downloads folder location from the registry (windows only)
     if os.name == 'nt':
         sub_key = r'SOFTWARE\\Microsoft\Windows\\CurrentVersion\\Explorer\\Shell Folders'
         downloads_guid = '{374DE290-123F-4565-9164-39C4925E467B}'
@@ -79,17 +79,18 @@ if __name__ == '__main__':
     main_options = {
         'ffmpeg_location': ffmpeg_location,
         'ffmprobe_location': ffprobe_location,
-        'outtmpl': get_downloads_folder() + '/%(title)s.%(ext)s',
+        'outtmpl': get_downloads_folder() + '/yt-dlp-output/%(title)s.%(ext)s',
     }
 
     link = input("Enter the link: ")
 
     file_type = input("Enter the file type: ")
 
-    if file_type == "mp3":
+    if file_type == "mp3" or file_type == "audio":
         type_options = {
             'format': 'bestaudio/best',
             'writethumbnail': True,
+            'forcethumbnail': True,
             'postprocessors': [
                 {'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3',
                     'preferredquality': '192'},
@@ -99,7 +100,7 @@ if __name__ == '__main__':
             ],
 
         }
-    elif file_type == "mp4":
+    elif file_type == "mp4" or file_type == "video":
         type_options = {
             'format': 'bestvideo+bestaudio/best',
             'merge_output_format': 'mp4'
