@@ -76,37 +76,37 @@ if __name__ == '__main__':
 
     ffmpeg_location, ffprobe_location = get_locations()
 
-    main_options = {
+    ydl_opts = {
         'ffmpeg_location': ffmpeg_location,
         'ffmprobe_location': ffprobe_location,
         'outtmpl': get_downloads_folder() + '/yt-dlp-output/%(title)s.%(ext)s',
     }
 
-    link = input("Enter the link: ")
+    yt_link = input("Enter the link: ")
 
     file_type = input("Enter the file type: ")
 
     if file_type == "mp3" or file_type == "audio":
-        type_options = {
+        ydl_opts.update({
             'format': 'bestaudio/best',
             'writethumbnail': True,
+            'audioquality': '192',
             'forcethumbnail': True,
             'postprocessors': [
-                {'key': 'FFmpegExtractAudio', 'preferredcodec': 'mp3',
-                    'preferredquality': '192'},
+                {'key': 'FFmpegExtractAudio',
+                    'preferredcodec': 'mp3', 'preferredquality': '192'},
                 {'key': 'FFmpegMetadata', 'add_metadata': 'True'},
                 {'key': 'EmbedThumbnail', 'already_have_thumbnail': False, }
-
             ],
+        })
 
-        }
     elif file_type == "mp4" or file_type == "video":
-        type_options = {
+        ydl_opts.update({
             'format': 'bestvideo+bestaudio/best',
             'merge_output_format': 'mp4'
-        }
+        })
     else:
         print("Error in params")
         exit()
-    with yt_dlp.YoutubeDL({**main_options, **type_options}) as ydl:
-        ydl.download(link)
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        ydl.download(yt_link)
