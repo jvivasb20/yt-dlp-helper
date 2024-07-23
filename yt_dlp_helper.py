@@ -7,6 +7,7 @@ import subprocess
 import sys
 import winreg
 
+import inquirer
 import yt_dlp
 
 CONFIG_FILE = 'config.ini'
@@ -29,8 +30,10 @@ def set_config(ffmpeg_location, ffprobe_location):
 
 def get_locations():
     config = get_config()
-    ffmpeg_location = config.get(CONFIG_DB, 'ffmpeg_location')
-    ffprobe_location = config.get(CONFIG_DB, 'ffprobe_location')
+    # config.get(CONFIG_DB, 'ffmpeg_location')
+    ffmpeg_location = r'C:\Windows\ffmpeg\bin\ffmpeg.exe'
+    # config.get(CONFIG_DB, 'ffprobe_location')
+    ffprobe_location = r'C:\Windows\ffmpeg\bin\ffprobe.exe'
 
     if not (ffmpeg_location or ffprobe_location):
         print("FFMPEG and FFPROBE locations not set. Please enter the path to the bin folder. (e.g. C:\\Windows\\ffmpeg\\bin))")
@@ -71,42 +74,48 @@ def get_downloads_folder():
 
 if __name__ == '__main__':
 
-    print('yt-dlp helper v1.0.0 ' + '\n' + 'yt-dlp version: ' +
-          yt_dlp.version.__version__ + '\n' + 'Python version: ' + sys.version + '\n')
+    print(
+        f'yt-dlp helper v1.0 \n yt-dlp version: {yt_dlp.version.__version__} \n Python version: {sys.version} \n')
 
-    ffmpeg_location, ffprobe_location = get_locations()
+    try:
+        ffmpeg_location, ffprobe_location = get_locations()
 
-    ydl_opts = {
-        'ffmpeg_location': ffmpeg_location,
-        'ffmprobe_location': ffprobe_location,
-        'outtmpl': get_downloads_folder() + '/yt-dlp-output/%(title)s.%(ext)s',
-    }
+        ydl_opts = {
+            'ffmpeg_location': ffmpeg_location,
+            'ffmprobe_location': ffprobe_location,
+            'outtmpl': get_downloads_folder() + '/yt-dlp-output/%(title)s.%(ext)s',
+        }
 
-    yt_link = input("Enter the link: ")
+        yt_link = input("Enter the link: ")
 
-    file_type = input("Enter the file type: ")
+        file_type_questions = inquirer.List(
+            'file_type', message="Select the file type", choices=['audio', 'video'])
 
-    if file_type == "mp3" or file_type == "audio":
-        ydl_opts.update({
-            'format': 'bestaudio/best',
-            'writethumbnail': True,
-            'audioquality': '192',
-            'forcethumbnail': True,
-            'postprocessors': [
-                {'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3', 'preferredquality': '192'},
-                {'key': 'FFmpegMetadata', 'add_metadata': 'True'},
-                {'key': 'EmbedThumbnail', 'already_have_thumbnail': False, }
-            ],
-        })
+        file_type_answers = inquirer.prompt([file_type_questions])
 
-    elif file_type == "mp4" or file_type == "video":
-        ydl_opts.update({
-            'format': 'bestvideo+bestaudio/best',
-            'merge_output_format': 'mp4'
-        })
-    else:
-        print("Error in params")
-        exit()
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        ydl.download(yt_link)
+        file_type = file_type_answers['file_type']
+
+        if file_type == "audio":
+            ydl_opts.update({
+                'format': 'bestaudio/best',
+                'writethumbnail': True,
+                'audioquality': '192',
+                'forcethumbnail': True,
+                'postprocessors': [
+                    {'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3', 'preferredquality': '192'},
+                    {'key': 'FFmpegMetadata', 'add_metadata': 'True'},
+                    {'key': 'EmbedThumbnail', 'already_have_thumbnail': False, }
+                ],
+            })
+        elif file_type == "video":
+            ydl_opts.update({
+                'format': 'bestvideo+bestaudio/best',
+                'merge_output_format': 'mp4'})
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download(yt_link)
+
+    except Exception as e:
+        print(e)
+        exit(1)
